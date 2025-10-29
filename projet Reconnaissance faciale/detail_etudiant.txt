@@ -1,0 +1,111 @@
+from flask import Flask, request, render_template
+import mysql.connector
+import base64
+import cv2
+import numpy as np
+import datetime
+
+app = Flask(__name__)
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="reconnaisancefacial"
+    )
+
+@app.route('/')
+def index():
+    return render_template('detail_etudiant.html')
+
+@app.route('/ajouter', methods=['POST'])
+def ajouter():
+    # Récupération des données du formulaire
+    CNEMASSAR = request.form['CNEMASSAR']
+    nom = request.form['nom']
+    prenom = request.form['prenom']
+    sex = request.form['sex']
+    telephone = request.form['telephone']
+    mail = request.form['mail']
+    departement = request.form['departement']
+    chef_departement = request.form['chef_departement']
+    options = request.form['options']
+    annee_academique = request.form['annee_academique']
+    semestre = request.form['semestre']
+    photo_data = request.form.get('photo_data')
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+
+    # 🔹 Vérifier ou insérer le département
+    #cursor.execute("SELECT ID_DEPARTEMENT FROM DEPARTEMENT WHERE NOM_DEPARTEMENT=%s", (departement,))
+    #result = cursor.fetchone()
+    #if result:
+        #id_departement = result[0]
+    #else:
+      #  cursor.execute("INSERT INTO DEPARTEMENT (NOM_DEPARTEMENT, CHEF_DEPARTEMENT) VALUES (%s, %s)", (departement, chef_departement))
+      #  id_departement = cursor.lastrowid
+
+    ### 🔹 Créer une présence par défaut
+    #cursor.execute("INSERT INTO PRESENCE (DATE_PRESENCE, HEURE, STATUT) VALUES (%s, %s, %s)",
+    #               (datetime.date.today(), datetime.datetime.now().time(), "Absent"))
+    #id_presence = cursor.lastrowid
+
+    # 🔹 Insérer l'étudiant
+    cursor.execute("""INSERT INTO etudiant (
+                   CNE_MASSAR, 
+                   nom, 
+                   prenom, 
+                   sex, 
+                   telephone, 
+                   mail, 
+                   options, 
+                   annee_academique,
+                   semestre) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""", 
+                   (CNEMASSAR, 
+                   nom, 
+                   prenom, 
+                   sex, 
+                   telephone, 
+                   mail, 
+                   options, 
+                   annee_academique,
+                   semestre))
+    cursor.execute("""INSERT INTO departement (
+                   nom_departement, 
+                   chef_departement) VALUES (%s, %s)""", 
+                   ( departement, 
+                   chef_departement))
+
+    # 🔹 Traitement de la photo
+    if photo_data:
+        header, encoded = photo_data.split(",", 1)
+        image_bytes = base64.b64decode(encoded)
+        nparr = np.frombuffer(image_bytes, np.uint8)
+        img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
+
+        # Détection du visage
+        face_cascade = cv2.CascadeClassifier(cv2.data.haarcascades + 'haarcascade_frontalface_default.xml')
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        faces = face_cascade.detectMultiScale(gray, 1.3, 5)
+
+        if len(faces) > 0:
+            x, y, w, h = faces[0]
+            face_img = img[y:y+h, x:x+w]
+
+            # Sauvegarde dans un fichier
+            filename = f"static/photos/{CNEMASSAR}.jpg"
+            cv2.imwrite(filename, face_img)
+
+            # Enregistrement dans la table IMAGE
+            _, buffer = cv2.imencode('.jpg', face_img)
+            photo_blob = buffer.tobytes()
+            cursor.execute("INSERT INTO IMAGE (CNE_MASSAR, IMAGE) VALUES (%s, %s)", (CNEMASSAR, photo_blob))
+
+    conn.commit()
+    cursor.close()
+    conn.close()
+
+    return render_template('detail_etudiant.html', success=True)
+

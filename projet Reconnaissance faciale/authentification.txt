@@ -1,0 +1,49 @@
+from flask import Flask, render_template, request, redirect, url_for, session
+import mysql.connector
+
+app = Flask(__name__)
+app.secret_key = 'votre_cle_secrete'  # Nécessaire pour gérer les sessions
+
+def get_db_connection():
+    return mysql.connector.connect(
+        host="localhost",
+        user="root",
+        password="",
+        database="reconnaisancefacial"
+    )
+
+@app.route('/')
+def login_page():
+    return render_template('authentification.html')
+
+@app.route('/login', methods=['POST'])
+def login():
+    username = request.form['username']
+    password = request.form['password']
+
+    conn = get_db_connection()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM USER WHERE USERNAME=%s AND PASSWORD=%s", (username, password))
+    user = cursor.fetchone()
+    cursor.close()
+    conn.close()
+
+    if user:
+        session['username'] = username  # Stocke le nom d'utilisateur
+        return redirect(url_for('accueil'))
+    else:
+        return render_template('authentification.html', error=True)
+
+@app.route('/accueil')
+def accueil():
+    if 'username' in session:
+        return render_template('index.html', username=session['username'])
+    else:
+        return redirect(url_for('login_page'))
+
+@app.route('/logout')
+def logout():
+    session.clear()
+    return redirect(url_for('login_page'))
+
+

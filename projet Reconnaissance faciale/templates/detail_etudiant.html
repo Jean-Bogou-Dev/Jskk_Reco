@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <link rel="stylesheet" href="{{ url_for('static', filename='style_detail.css') }}">
+        <title>Details Etudiant</title>
+        <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    </head>
+
+    <body>
+        {% if success %}
+    <script>
+    Swal.fire({
+        icon: 'success',
+        title: 'Étudiant enregistré',
+        text: 'Les informations ont été enregistrées avec succès !',
+        confirmButtonText: 'OK'
+    });
+    </script>
+    {% endif %}
+        <h2>Enrégistrer Etudiant(e)</h2><br>
+        <div class="container">
+            <form action="/ajouter" method="post">
+                <div class="etudiant">
+                <input type="text" name="CNEMASSAR" placeholder="CNE/MASSAR" required><br>    
+                <input type="text" name="nom" placeholder="Nom" required><br>
+                <input type="text" name="prenom" placeholder="Prénoms" required><br>
+                SEX: M<input type="radio" name="sex" value="M" required>
+                F<input type="radio" name="sex" value="F" required>
+                <br>
+                <input type="text" name="telephone" placeholder="Téléphone" required><br>
+                <input type="text" name="mail" placeholder="E-mail" required><br>
+                </div>
+                
+                <div class="camera">
+                    <video  id="video" width="320" height="240" autoplay></video>
+                    <canvas id="canvas" style="display:none;"></canvas>
+                </div>
+                    <br>
+                <div class="boutton_camera">
+                    <button type="button" onclick="capturePhoto()"  required>📸 Prendre Photo</button>
+                </div>
+                    <input type="hidden" name="photo_data" id="photo_data">
+
+                <br>
+
+                <div class="admin">
+                    Département
+                    <select name="departement">
+                        <option value="Informatique">Informatique</option>
+                        <option value="Economique">Economique</option>
+                    </select> <br>
+                    
+                <input type="text" name="chef_departement" placeholder="Chef departement" required><br>
+                <input type="text" name="options" placeholder="Option" required><br>
+                
+                <input type="text" name="annee_academique" placeholder="Année Académique" required><br>
+                <input type="number" name="semestre" placeholder="Semestre" min="1" required><br>
+                </div>
+                <div class="boutton">
+                    <input type="submit" name="Enregistrer" value="Enregistrer">
+                    <input type="reset" name="effacer" value="Effacer">
+                </div>
+                <div>
+                    <table border="2px">
+                            <tr>
+                                <th>CNE/<br>MASSAR</th>
+                                <th>Nom</th>
+                                <th>Prenom</th>
+                                <th>Sex</th>
+                                <th>Option</th>
+                                <th>Departement</th>
+                                <th>Chef departement</th>
+                                <th>Année</th>
+                                <th>Semestre</th>
+                                <th>Mail</th>
+                                <th>Tel</th>
+                            </tr>
+                        <tr class="a">
+                            <td>{{ CNEMASSAR }}</td>
+                            <td>{{ nom }}</td>
+                            <td>{{ prenom }}</td>
+                            <td>{{ sex }}</td>
+                            <td>{{ options }}</td>
+                            <td>{{ departement }}</td>
+                            <td>{{ chef_departement }}</td>
+                            <td>{{ annee_academique }}</td>
+                            <td>{{ semestre }}</td>
+                            <td>{{ mail }}</td>
+                            <td>{{ telephone }}</td>
+                        </tr>
+                    </table>
+                </div>
+            </form>
+        </div>
+
+       <script>
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const photoInput = document.getElementById('photo_data');
+
+  // Active la webcam
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    });
+
+  // Capture la photo et encode en base64
+  function capturePhoto() {
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    canvas.getContext('2d').drawImage(video, 0, 0);
+    const imageData = canvas.toDataURL('image/jpeg');
+    photoInput.value = imageData;
+    alert("📸 Photo capturée !");
+  }
+</script>
+
+<br><br>
+    <div class="boutton_accueil"><a href="{{ url_for('accueil') }}" alt="Accueil" title="Accueil">⬅</a></div>
+    </body>
+</html>

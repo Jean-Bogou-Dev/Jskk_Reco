@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="utf-8">
+        <title>Details Etudiant</title>
+        <link rel="stylesheet" href="{{ url_for('static', filename='style_rapport.css') }}">
+    </head>
+
+    <body>
+        <h2>Rapport</h2><br>
+        <div class="container">
+               <form method="POST" action="{{ url_for('interface_impression') }}" target="_blank">
+                <div class="boutton">
+                    <input type="submit" value="Imprimer" title="imprimer le rapport">
+                </div>
+
+                <div class="scroll-zone">
+                    <table border="2px">
+                        <tr>
+                            <th>CNE/<br>MASSAR</th>
+                            <th>Nom</th>
+                            <th>Prenom</th>
+                            <th>Sex</td>
+                            <th>Option</th>
+                            <th>Departement</th>
+                            <th>Chef departement</th>
+                            <th>Année</th>
+                            <th>Semestre</th>
+                            <th>Mail</th>
+                            <th>Tel</th>
+                            <th>Date</th>
+                            <th>Heure</th>
+                            <th>Statut</th>
+                        </tr>
+                        <tr>
+                        {% for p in presences %}
+                            <td>{{ p[0] }}</td>
+                            <td>{{ p[1] }}</td>
+                            <td>{{ p[2] }}</td>
+                            <td>{{ p[3] }}</td>
+                            <td>{{ p[4] }}</td>
+                            <td>{{ p[5] }}</td>
+                            <td>{{ p[6] }}</td>
+                            <td>{{ p[7] }}</td>
+                            <td>{{ p[8] }}</td>
+                            <td>{{ p[9] }}</td>
+                            <td>{{ p[10] }}</td>
+                            <td>{{ p[11] }}</td>
+                            <td>{{ p[12] }}</td>
+                            <td>{{ p[13] }}</td>
+                            <td>{{ p[14] }}</td>
+                        </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            </form>
+        </div>
+                <div class="boutton_accueil"><a href="{{ url_for('accueil') }}" alt="Accueil" title="Accueil">⬅</a></div>
+    </body>
+</html>
